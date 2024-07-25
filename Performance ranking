@@ -1,0 +1,13 @@
+=IFS(
+    AND(B20 > 90, C20 = ""), "Overachiever",
+    AND(C20 > 90, B20 = ""), "Overachiever",
+    AND(C20 >= 0.95, C20 <= 1, B20 >= 0.95, B20 <= 1), "Overachiever",
+    AND(C20 >= 0.95, C20 <= 1, B20 >= 0.7, B20 < 0.95), "Performer",
+    AND(C20 >= 0.85, C20 < 0.95, B20 >= 0.95), "Performer",
+    AND(C20 >= 0.85, C20 < 0.95, B20 >= 0.7, B20 < 0.95), "Performer",
+    AND(C20 >= 0.95, C20 <= 1, B20 >= 0, B20 < 0.7), "Low Performer",
+    AND(C20 >= 0, C20 < 0.85, B20 >= 0.95, B20 <= 1), "Low Performer",
+    AND(C20 >= 0.85, C20 < 0.95, B20 >= 0, B20 < 0.7), "Low Performer",
+    AND(C20 >= 0, C20 < 0.85, B20 >= 0.7, B20 < 0.95), "Low Performer",
+    AND(C20 >= 0, C20 < 0.85, B20 >= 0, B20 < 0.7), "Low Performer"
+)
