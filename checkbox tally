@@ -1,0 +1,33 @@
+function onEdit(e) {
+  var sheet = e.source.getActiveSheet();
+  var range = e.range;
+
+  // Check if the edited cell is in column A
+  if (range.getColumn() == 1 && range.getValue() == true) {
+    // Get the user's email
+    var userEmail = Session.getActiveUser().getEmail();
+
+    // Append the log to the 'Log' sheet
+    var logSheet = e.source.getSheetByName('Log');
+    if (!logSheet) {
+      logSheet = e.source.insertSheet('Log');
+      logSheet.appendRow(['User Email', 'Count']);
+    }
+
+    // Find the row with the user's email
+    var data = logSheet.getDataRange().getValues();
+    var found = false;
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] === userEmail) {
+        logSheet.getRange(i + 1, 2).setValue(data[i][1] + 1);
+        found = true;
+        break;
+      }
+    }
+
+    // If the user's email is not found, add a new row
+    if (!found) {
+      logSheet.appendRow([userEmail, 1]);
+    }
+  }
+}
