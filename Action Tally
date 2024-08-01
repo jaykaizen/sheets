@@ -1,0 +1,42 @@
+function onEdit(e) {
+  var sheet = e.source.getActiveSheet();
+  var range = e.range;
+
+  // Check if the edited cell is in column D
+  if (range.getColumn() == 4) {
+    // Get the user's email
+    var userEmail = Session.getActiveUser().getEmail();
+    // Get the current date in a readable format
+    var date = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+
+    // Get or create the 'Log' sheet
+    var logSheet = e.source.getSheetByName('Log');
+    if (!logSheet) {
+      logSheet = e.source.insertSheet('Log');
+      logSheet.appendRow(['User Email', 'First Action Date', 'Total Actions']);
+    }
+
+    // Get existing data from the log sheet
+    var data = logSheet.getDataRange().getValues();
+    var found = false;
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] === userEmail) {
+        // Check if the date matches the first action date
+        if (data[i][1] === date) {
+          logSheet.getRange(i + 1, 3).setValue(data[i][2] + 1);
+        } else {
+          // Update the first action date and increment the count
+          logSheet.getRange(i + 1, 2).setValue(date);
+          logSheet.getRange(i + 1, 3).setValue(data[i][2] + 1);
+        }
+        found = true;
+        break;
+      }
+    }
+
+    // If the user's email is not found, add a new row
+    if (!found) {
+      logSheet.appendRow([userEmail, date, 1]);
+    }
+  }
+}
