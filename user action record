@@ -1,0 +1,19 @@
+function onEdit(e) {
+  var sheet = e.source.getActiveSheet();
+  var range = e.range;
+
+  // Check if the edited cell is in column J
+  if (range.getColumn() == 10) { // Column J is the 10th column
+    // Get the user's email
+    var userEmail = Session.getActiveUser().getEmail();
+    // Get the current date in a readable format
+    var date = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+
+    // Get the row number of the edited cell
+    var row = range.getRow();
+
+    // Set the email in column I and the date in column H of the same row
+    sheet.getRange(row, 9).setValue(userEmail); // Column I is the 9th column
+    sheet.getRange(row, 8).setValue(date);      // Column H is the 8th column
+  }
+}
