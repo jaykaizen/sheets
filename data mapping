@@ -1,0 +1,83 @@
+function populateWeeklyAverages() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // Sheets
+  const sourceSheet = ss.getSheetByName("yoursourcesheet");
+  const targetSheet = ss.getSheetByName("yourdestinationsheet");
+
+  // Source data from "source" sheet
+  const sourceData = sourceSheet.getDataRange().getValues();
+
+  // Target data layout
+  const agentEmails = targetSheet.getRange("A29:A42").getValues().flat(); // Agent emails
+  const weekHeaders = targetSheet.getRange("B23:BA23").getValues()[0]; // Week headers (WEEK 1 to WEEK 52)
+
+  // Clear previous data
+  targetSheet.getRange(24, 2, agentEmails.length, weekHeaders.length).clearContent();
+
+  // Prepare a map to store scores for each agent and week
+  const scoresMap = new Map();
+
+  // Process the source data
+  sourceData.forEach(row => {
+    const email = row[0]; // Email (column A)
+    const score = row[4]; // Score (column E)
+    const week = row[6]; // Week (column G)
+
+    if (!email || score === "" || !week) {
+      Logger.log(`Skipping row: Missing data (Email: ${email}, Score: ${score}, Week: ${week})`);
+      return; // Skip rows with missing or empty data
+    }
+
+    // Ensure score is a valid number
+    const numericScore = parseFloat(score);
+    if (isNaN(numericScore)) {
+      Logger.log(`Skipping row: Invalid score (Email: ${email}, Score: ${score}, Week: ${week})`);
+      return; // Skip rows with invalid score data
+    }
+
+    // Format week from source sheet (e.g., "Week 39") to "WEEK 39"
+    const formattedWeek = `Week ${week.trim().replace(/^WEEK\s+/i, '')}`;
+
+    // Log the week and score for debugging
+    Logger.log(`Processing: Email: ${email}, Week: ${formattedWeek}, Score: ${numericScore}`);
+
+    // Create a unique key for each agent-week pair
+    const key = `${email.toLowerCase()}|${formattedWeek}`;
+
+    // Store scores in the map
+    if (!scoresMap.has(key)) {
+      scoresMap.set(key, []);
+    }
+    scoresMap.get(key).push(numericScore);
+  });
+
+  // Populate the target sheet with averages
+  agentEmails.forEach((email, agentRowIndex) => {
+    weekHeaders.forEach((weekHeader, weekColIndex) => {
+      // Log the email and week header being processed
+      Logger.log(`Processing Email: ${email}, Week Header: ${weekHeader}`);
+
+      // Create the key for the scoresMap
+      const key = `${email.toLowerCase()}|${weekHeader}`;
+
+      // Fetch scores for the agent-week pair
+      const scores = scoresMap.get(key) || [];
+
+      // Log the scores for the agent-week pair
+      Logger.log(`Scores for ${key}: ${scores.join(', ')}`);
+
+      const average = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : "";
+
+      // Log the calculated average
+      Logger.log(`Average for ${key}: ${average}`);
+
+      // Set the calculated average in the appropriate cell
+      if (average !== "") {
+        targetSheet.getRange(29 + agentRowIndex, 2 + weekColIndex).setValue(average);
+      } else {
+        Logger.log(`No data for Email: ${email}, Week: ${weekHeader}`);
+      }
+    });
+  });
+}
